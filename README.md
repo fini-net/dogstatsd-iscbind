@@ -8,6 +8,7 @@ agents and proxies into [datadog](https://www.datadoghq.com/) via
 
 * Perl
 * Perl module [DataDog::DogStatsd](https://github.com/binary-com/dogstatsd-perl) 
+  -- also included in the [lib](lib) directory for convenience
 
 ## Metrics generated
 
