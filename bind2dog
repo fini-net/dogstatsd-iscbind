@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use DataDog::DogStatsd;
+
+#TODO: handle options
+my $debug = 0;
+
+my $dogstatsd = DataDog::DogStatsd->new;
+$dogstatsd->increment( 'dnet.script_runs') unless $debug;
+
+my ($logfile) = @ARGV;
+follow_file($logfile);
+
+sub follow_file {
+	my($filename) = @_;
+
+}
