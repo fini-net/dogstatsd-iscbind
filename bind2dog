@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use DataDog::DogStatsd;
+use File::Slurp;
 
 #TODO: handle options
 my $debug = 0;
@@ -15,5 +16,53 @@ follow_file($logfile);
 
 sub follow_file {
 	my($filename) = @_;
+
+	unless (-e $filename) {
+		warn "$filename missing";
+		return;
+	}
+
+	parse_bind_stats($filename);
+}
+
+sub parse_bind_stats {
+	my ($filename) = @_;
+
+	unless (-e $filename) {
+		warn "$filename missing";
+		return;
+	}
+
+	my @stats_lines = read_file($filename);
+	print scalar(@stats_lines) . " lines in $filename\n";
+
+	my ($section,$dumptime,$view);
+	foreach my $line (@stats_lines) {
+		chomp($line);
+		if ($line =~ /^[+][+] (.*) [+][+]/) {
+			$section = $1;
+			$view = '';
+			print "SECTION $section\n";
+		} elsif ($line =~ /^[+][+][+].*[+][+][+] \((\d+)\)/) {
+			# opening line
+			$dumptime = $1;
+			print "dumped at $dumptime\n";
+		} elsif ($line =~ /^--- /) {
+			# closing line
+		} elsif ($line =~ /^\[Common\]/) {
+			$view = 'Common';
+		} elsif ($line =~ /^\[View: (\w+)[ \]]/) {
+			# view subsection
+			$view = $1;
+			print "$section has subsection $view\n";
+		} elsif ($line =~ /^\s*(\d+) (.*)$/) {
+			# an actual stat
+			my $value = $1;
+			my $key = $2;
+#			print "$section/$view      $key -> $value\n";
+		} else {
+			print "$section unhandled $line\n";
+		}
+	}
 
 }
